@@ -1,0 +1,28 @@
+<?php
+
+# Specify your broker ID. This will be given to you once when you
+# are registered with the SSO service. 
+define('broker_id', '');
+
+# Specify your broker secret. This will be given to you once when you
+# are registered with the SSO service. This is used to check signatures
+# sent in requests to your site to ensure the request came unmodified
+# from sso.irap.org. This should be kept secret and never distributed.
+define('broker_secret', '');
+
+class Settings
+{
+    /*
+     * Specify which parameters we should recieve from the SSO.
+     * Some brokers will get all of these details, some will only get
+     * the user_id and signature, in which case missing details MUST be
+     * removed from this list for the system to work.
+     */
+    $expectedSsoParams = array(
+       'user_id',
+       'user_name',
+       'user_email'
+       'signature'
+    );
+}
+    
