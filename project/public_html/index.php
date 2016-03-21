@@ -2,7 +2,7 @@
 
 session_start();
 
-require_once(__DIR__ . '/../Settings.php');
+require_once(__DIR__ . '/../../settings/Settings.php');
 
 
 if (!isset($_SESSION['user_id']))

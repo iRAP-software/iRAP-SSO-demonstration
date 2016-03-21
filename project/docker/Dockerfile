@@ -9,6 +9,11 @@ RUN apt-get update
 RUN apt-get dist-upgrade -y
 
 
+# Enable PHP 5.6 repo and update apt
+RUN echo "deb http://ppa.launchpad.net/ondrej/php5-5.6/ubuntu trusty main" >> /etc/apt/sources.list && \
+    apt-key adv --keyserver keyserver.ubuntu.com --recv-key E5267A6C && \
+    apt-get update
+
 # Install the relevant packages
 RUN apt-get install vim apache2 libapache2-mod-php5 php5-cli php5-mysqlnd curl php5-curl php5-mcrypt -y
 
@@ -36,10 +41,10 @@ RUN apt-get install cron -y
 
 # Add our websites files to the default apache directory (/var/www)
 # This should be as close to the last step as possible for faster rebuilds
-COPY project /var/www/site/.
+COPY project /var/www/site/project
 
 # Add our websites files to the default apache directory (/var/www)
-COPY settings /var/www/site/.
+COPY settings /var/www/site/settings
 
 # Update our apache sites available with the config we created
 COPY project/docker/apache-config.conf /etc/apache2/sites-enabled/000-default.conf
