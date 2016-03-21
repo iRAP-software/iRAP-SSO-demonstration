@@ -22,7 +22,6 @@ docker rm $PROJECT_NAME
 
 docker run -d \
 -p 80:80 \
---privileged \
 --restart=always \
 --name="$PROJECT_NAME" \
 $CONTAINER_IMAGE
