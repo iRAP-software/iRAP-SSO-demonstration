@@ -8,20 +8,20 @@ if ! [ -n "$BASH_VERSION" ];then
     exit;
 fi
 
+# Settings
+PROJECT_NAME="sso-example"
+
 SCRIPT=$(readlink -f "$0")
 SCRIPTPATH=$(dirname "$SCRIPT") 
 cd $SCRIPTPATH
 
-# load the variables
-source ../../settings/docker_settings.sh
-
-CONTAINER_IMAGE="`echo $REGISTRY`/`echo $PROJECT_NAME`"
+CONTAINER_IMAGE="`echo $PROJECT_NAME`"
 
 docker kill $PROJECT_NAME
 docker rm $PROJECT_NAME
 
 docker run -d \
--p 80:80 -p 443:443 \
+-p 80:80 \
 --restart=always \
 --name="$PROJECT_NAME" \
 $CONTAINER_IMAGE
