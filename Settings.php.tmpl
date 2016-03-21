@@ -2,27 +2,31 @@
 
 # Specify your broker ID. This will be given to you once when you
 # are registered with the SSO service. 
-define('broker_id', '');
+define('BROKER_ID', '');
 
-# Specify your broker secret. This will be given to you once when you
+
+# The broker_key is a public key that will be given to you once when 
+# you are registered with the SSO service and is passed to the sso 
+# service when directing a user to login. 
+define('BROKER_PUBLIC_KEY', '');
+
+
+# The broker secret is a private key that will be given to you once when you
 # are registered with the SSO service. This is used to check signatures
 # sent in requests to your site to ensure the request came unmodified
-# from sso.irap.org. This should be kept secret and never distributed.
-define('broker_secret', '');
+# from the SSO service. This should be kept secret and never distributed.
+define('BROKER_SECRET', '');
 
-class Settings
+
+class Settings 
 {
-    /*
-     * Specify which parameters we should recieve from the SSO.
-     * Some brokers will get all of these details, some will only get
-     * the user_id and signature, in which case missing details MUST be
-     * removed from this list for the system to work.
-     */
-    $expectedSsoParams = array(
-       'user_id',
-       'user_name',
-       'user_email'
-       'signature'
+    # This requires PHP 5.6+
+    # When we move over to PHP 7, we will be able to put this array in a define and
+    # remove the Settings class.
+    const EXPECTED_SSO_PARAMS = array(
+        'user_id',
+        'user_name',
+        'user_email',
+        'signature'
     );
 }
-    

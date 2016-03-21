@@ -9,28 +9,28 @@ require_once(__DIR__ . '/Settings.php');
 if (!isset($_SESSION['user_id']))
 {
     $gotSsoData = true;
-
-    foreach ($expectedSsoParams as $param)
+    
+    foreach (Settings::EXPECTED_SSO_PARAMS as $param)
     {
-        if (!isset($_GET[$param])
+        if (!isset($_GET[$param]))
         {
             $gotSsoData = false;
-            break
+            break;
         }
     }
-
+    
     if ($gotSsoData)
     {
         header("Location: sso.irap.org?broker_id=" . BROKER_ID);
     }
     else
     {
-        if (isValidSignature($expectedSsoParams))
+        if (isValidSignature(Settings::EXPECTED_SSO_PARAMS))
         {
-            $_SESSION['user_id'] = $_GET['user_id'];
-            $_SESSION['user_name'] = $_GET['user_name'];
+            $_SESSION['user_id']    = $_GET['user_id'];
+            $_SESSION['user_name']  = $_GET['user_name'];
             $_SESSION['user_email'] = $_GET['user_email'];
-
+            
             header("Location: sso.irap.org?broker_id=" . BROKER_ID);
         }
         else
@@ -58,18 +58,18 @@ else
 function isValidSignature($expectedSsoParams)
 {
     $data = array();
-
+    
     foreach ($expectedSsoParams as $paramName)
     {
         $data[$paramName] = $_GET[$paramName];
     }
-
+    
     unset($data['siganture']);
     ksort($data);
     $dataString = json_encode($data);
     $sig = hash_hmac('sha256', $dataString, BROKER_SECRET);
 
-    return ($sig === $_GET['signature'])
+    return ($sig === $_GET['signature']);
 }
 
 
