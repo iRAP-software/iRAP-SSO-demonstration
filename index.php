@@ -5,7 +5,6 @@ session_start();
 require_once(__DIR__ . '/Settings.php');
 
 
-
 if (!isset($_SESSION['user_id']))
 {
     $gotSsoData = true;
@@ -21,7 +20,12 @@ if (!isset($_SESSION['user_id']))
     
     if ($gotSsoData)
     {
-        header("Location: sso.irap.org?broker_id=" . BROKER_ID);
+        $params = array(
+            'broker_id' => BROKER_ID,
+            'broker_public_key' => BROKER_PUBLIC_KEY
+        );
+        
+        header("Location: " . SSO_SITE_HOSTNAME . "?" . http_build_query($params));
     }
     else
     {
@@ -31,12 +35,17 @@ if (!isset($_SESSION['user_id']))
             $_SESSION['user_name']  = $_GET['user_name'];
             $_SESSION['user_email'] = $_GET['user_email'];
             
-            header("Location: sso.irap.org?broker_id=" . BROKER_ID);
+            header("Location: " . SITE_HOSTNAME);
         }
         else
         {
             # Invalid request (hack?), redirect the user back to sign in.
-            header("Location: sso.irap.org?broker_id=" . BROKER_ID);
+            $params = array(
+                'broker_id' => BROKER_ID,
+                'broker_public_key' => BROKER_PUBLIC_KEY
+            );
+            
+            header("Location: " . SSO_SITE_HOSTNAME . "?" . http_build_query($params));
         }
     }
 }
@@ -44,7 +53,7 @@ else
 {
     # User is signed in.
     print 
-        "Hello " . $_SESSION['user_name'] . ". " . 
+        "Hello " . $_SESSION['user_name'] . ". <br />" . 
         "Your user ID is: " . $_SESSION['user_id'] . " " . 
         "and your email is: " . $_SESSION['user_email'];
 }
@@ -52,7 +61,7 @@ else
 
 /**
  * Check whether the user details sent to us came from
- * sso.irap.org unmodified.
+ * the SSO service without being modified.
  * @param $expectedSsoParams - array list of expected $_GET parameters sent by sso.irap.org
  */
 function isValidSignature($expectedSsoParams)
@@ -71,6 +80,3 @@ function isValidSignature($expectedSsoParams)
 
     return ($sig === $_GET['signature']);
 }
-
-
-
