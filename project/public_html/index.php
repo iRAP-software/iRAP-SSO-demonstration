@@ -9,16 +9,27 @@ if (!isset($_SESSION['user_id']))
 {
     $gotSsoData = true;
     
-    foreach (Settings::EXPECTED_SSO_PARAMS as $param)
+    if (isset($_GET['user_data']))
     {
-        if (!isset($_GET[$param]))
+        $decodedUserJsonData = urldecode($_GET['user_data']);
+        $userDataArray = json_decode($decodedUserJsonData, true);
+        
+        foreach (Settings::EXPECTED_SSO_PARAMS as $param)
         {
-            $gotSsoData = false;
-            break;
+            if (!isset($userDataArray[$param]))
+            {
+                $gotSsoData = false;
+                break;
+            }
         }
     }
+    else 
+    {
+        $gotSsoData = false;
+    }
     
-    if ($gotSsoData)
+    
+    if (!$gotSsoData)
     {
         $params = array(
             'broker_id' => BROKER_ID,
@@ -29,11 +40,11 @@ if (!isset($_SESSION['user_id']))
     }
     else
     {
-        if (isValidSignature(Settings::EXPECTED_SSO_PARAMS))
+        if (isValidSignature($userDataArray))
         {
-            $_SESSION['user_id']    = $_GET['user_id'];
-            $_SESSION['user_name']  = $_GET['user_name'];
-            $_SESSION['user_email'] = $_GET['user_email'];
+            $_SESSION['user_id']    = $userDataArray['user_id'];
+            $_SESSION['user_name']  = $userDataArray['user_name'];
+            $_SESSION['user_email'] = $userDataArray['user_email'];
             
             header("Location: " . SITE_HOSTNAME);
         }
@@ -62,21 +73,26 @@ else
 /**
  * Check whether the user details sent to us came from
  * the SSO service without being modified.
- * @param $expectedSsoParams - array list of expected $_GET parameters sent by sso.irap.org
+ * @param $dataArray - array of name/value pairs in the recieved data
  */
-function isValidSignature($expectedSsoParams)
+function isValidSignature($dataArray)
 {
-    $data = array();
-    
-    foreach ($expectedSsoParams as $paramName)
+    if (!isset($dataArray['signature']))
     {
-        $data[$paramName] = $_GET[$paramName];
+        throw new Exception("Missing signature");
     }
     
-    unset($data['siganture']);
-    ksort($data);
-    $dataString = json_encode($data);
-    $sig = hash_hmac('sha256', $dataString, BROKER_SECRET);
+    $recievedSignature = $dataArray['signature'];
+    unset($dataArray['signature']);
+    ksort($dataArray);
+    $jsonString = json_encode($dataArray);
+    $generatedSignature = hash_hmac('sha256', $jsonString, BROKER_SECRET);
 
-    return ($sig === $_GET['signature']);
+    if ($generatedSignature !== $recievedSignature)
+    {
+        print print_r($dataArray, true);
+        die("$generatedSignature !== $recievedSignature");
+    }
+    
+    return ($generatedSignature === $recievedSignature);
 }
