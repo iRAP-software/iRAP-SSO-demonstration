@@ -42,13 +42,14 @@ COPY index.php /var/www/site/index.php
 COPY Settings.php /var/www/site/Settings.php
 
 # Update our apache sites available with the config we created
-COPY project/docker/apache-config.conf /etc/apache2/sites-enabled/000-default.conf
+COPY docker/apache-config.conf /etc/apache2/sites-enabled/000-default.conf
 
 
 
 # Use the crontab file.
 # The crontab file was already added when we added "project"
-RUN crontab /var/www/site/project/docker/crons.conf
+ADD docker/crons.conf /root/crons.conf
+RUN crontab /root/crons.conf
 
 # Make the uploads folder writeable
 RUN chown root:www-data -R /var/www
