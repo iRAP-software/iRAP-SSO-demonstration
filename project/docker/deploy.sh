@@ -8,6 +8,14 @@ if ! [ -n "$BASH_VERSION" ];then
     exit;
 fi
 
+# Setup for relative paths.
+SCRIPT=$(readlink -f "$0")
+SCRIPTPATH=$(dirname "$SCRIPT") 
+cd $SCRIPTPATH
+
+# load the variables
+source ../../settings/docker_settings.sh
+
 # Settings
 PROJECT_NAME="sso-example"
 
@@ -21,8 +29,7 @@ docker kill $PROJECT_NAME
 docker rm $PROJECT_NAME
 
 docker run -d \
--p 80:80 \
+$NETWORK_BIND_1 \
 --restart=always \
 --name="$PROJECT_NAME" \
 $CONTAINER_IMAGE
-
