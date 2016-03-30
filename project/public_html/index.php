@@ -31,17 +31,14 @@ if (!isset($_SESSION['user_id']))
     
     if (!$gotSsoData)
     {
-        $params = array(
-            'broker_id' => BROKER_ID,
-            'broker_public_key' => BROKER_PUBLIC_KEY
-        );
-        
+        $params = array('broker_id' => BROKER_ID);
         header("Location: " . SSO_SITE_HOSTNAME . "?" . http_build_query($params));
     }
     else
     {
         if (isValidSignature($userDataArray))
         {
+            session_id(generateSessionId());
             $_SESSION['user_id']    = $userDataArray['user_id'];
             $_SESSION['user_name']  = $userDataArray['user_name'];
             $_SESSION['user_email'] = $userDataArray['user_email'];
@@ -51,11 +48,7 @@ if (!isset($_SESSION['user_id']))
         else
         {
             # Invalid request (hack?), redirect the user back to sign in.
-            $params = array(
-                'broker_id' => BROKER_ID,
-                'broker_public_key' => BROKER_PUBLIC_KEY
-            );
-            
+            $params = array('broker_id' => BROKER_ID);
             header("Location: " . SSO_SITE_HOSTNAME . "?" . http_build_query($params));
         }
     }
@@ -95,4 +88,16 @@ function isValidSignature($dataArray)
     }
     
     return ($generatedSignature === $recievedSignature);
+}
+
+
+/**
+ * Generate a session ID to use for a given user_id. We need to do this so
+ * that we can figure out which file to destroy (to destroy the session) for
+ * the appropriate user when we get a logout request for a specific user ID.
+ * @param int $user_id - the ID of the user we are generating a session ID for.
+ */
+function generateSessionId($user_id)
+{
+    return hash_hmac('sha256', $user_id, BROKER_SECRET);
 }
