@@ -38,7 +38,13 @@ if (!isset($_SESSION['user_id']))
     {
         if (isValidSignature($userDataArray))
         {
+            // Specifically set the session ID for the user. This way we can destroy
+            // a session for a particular user from another script.
+            // Cannot call session_id AFTER session_start if setting ID.
+            session_destroy(); 
             session_id(generateSessionId());
+            session_start();
+            
             $_SESSION['user_id']    = $userDataArray['user_id'];
             $_SESSION['user_name']  = $userDataArray['user_name'];
             $_SESSION['user_email'] = $userDataArray['user_email'];
@@ -80,12 +86,6 @@ function isValidSignature($dataArray)
     ksort($dataArray);
     $jsonString = json_encode($dataArray);
     $generatedSignature = hash_hmac('sha256', $jsonString, BROKER_SECRET);
-
-    if ($generatedSignature !== $recievedSignature)
-    {
-        print print_r($dataArray, true);
-        die("$generatedSignature !== $recievedSignature");
-    }
     
     return ($generatedSignature === $recievedSignature);
 }
