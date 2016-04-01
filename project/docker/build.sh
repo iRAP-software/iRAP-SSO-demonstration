@@ -29,13 +29,18 @@ echo ""   # (optional) move to a new line
 
 if [[ $REPLY =~ ^[Yy]$ ]]
 then
-    docker build --tag $PROJECT_NAME .
+    docker build --pull --tag $PROJECT_NAME .
 else
     docker build --no-cache --pull --tag $PROJECT_NAME .
 fi
 
 # Remove the duplicated Dockerfile after the build.
 rm $SCRIPTPATH/../../Dockerfile
+
+# If we have specified a registry, then push the built image.
+if [[ $REGISTRY ]]; then
+    docker push $REGISTRY/$PROJECT_NAME
+fi
 
 echo "Run the container with the following command:"
 echo "bash deploy.sh"
