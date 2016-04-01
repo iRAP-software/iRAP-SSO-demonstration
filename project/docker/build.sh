@@ -8,14 +8,16 @@ if ! [ -n "$BASH_VERSION" ];then
     exit;
 fi
 
-# Settings
-PROJECT_NAME="sso-example"
-
 
 # Get the path to script just in case executed from elsewhere.
 SCRIPT=$(readlink -f "$0")
 SCRIPTPATH=$(dirname "$SCRIPT")
 cd $SCRIPTPATH
+
+
+# Settings
+# Load the variables from settings file.
+source ../../settings/docker_settings.sh
 
 
 # Copy the docker file up and run it in order to build the container.
