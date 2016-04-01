@@ -29,11 +29,17 @@ cd ../../.
 read -p "Do you want to use a cached build (y/n)? " -n 1 -r
 echo ""   # (optional) move to a new line
 
+if [[ $REGISTRY ]]; then
+    TAG=$REGISTRY/$PROJECT_NAME
+else
+    TAG=$PROJECT_NAME
+fi
+
 if [[ $REPLY =~ ^[Yy]$ ]]
 then
-    docker build --pull --tag $PROJECT_NAME .
+    docker build --pull --tag $TAG .
 else
-    docker build --no-cache --pull --tag $PROJECT_NAME .
+    docker build --no-cache --pull --tag $TAG .
 fi
 
 # Remove the duplicated Dockerfile after the build.
