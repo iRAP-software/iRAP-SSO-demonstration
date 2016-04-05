@@ -84,7 +84,7 @@ function main()
         }
         else 
         {
-            throw Exception("Missing required data parameter");
+            throw new Exception("Missing required data parameter");
         }
     }
     catch (Exception $e)
