@@ -42,7 +42,7 @@ if (!isset($_SESSION['user_id']))
             // a session for a particular user from another script.
             // Cannot call session_id AFTER session_start if setting ID.
             session_destroy(); 
-            session_id(generateSessionId());
+            session_id(generateSessionId($userDataArray['user_id']));
             session_start();
             
             $_SESSION['user_id']    = $userDataArray['user_id'];
