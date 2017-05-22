@@ -7,97 +7,43 @@ require_once(__DIR__ . '/../../settings/Settings.php');
 
 if (!isset($_SESSION['user_id']))
 {
-    $gotSsoData = true;
-    
-    if (isset($_GET['user_data']))
+    /*
+     * If the user isn't logged in, create a SsoClient object and run the login() method.
+     * The user's browser will be redirected to the SSO and then returned here with the user
+     * credentials.
+     */
+    $ssoClient = new iRAP\SsoClient\SsoClient(BROKER_ID, BROKER_SECRET);
+    $ssoDetails = $ssoClient->login();
+
+    if($ssoClient->loginSuccessful())
     {
-        $decodedUserJsonData = urldecode($_GET['user_data']);
-        $userDataArray = json_decode($decodedUserJsonData, true);
+        /*
+         * The SsoClient provides a session id that can be used to identify the user, even from
+         * outside of the current session. This is useful when remotely destroying the session.
+         */
+        session_destroy();
+        session_id($ssoDetails->get_session_id());
+        session_start();
         
-        foreach (Settings::EXPECTED_SSO_PARAMS as $param)
-        {
-            if (!isset($userDataArray[$param]))
-            {
-                $gotSsoData = false;
-                break;
-            }
-        }
-    }
-    else 
-    {
-        $gotSsoData = false;
-    }
-    
-    
-    if (!$gotSsoData)
-    {
-        $params = array('broker_id' => BROKER_ID);
-        header("Location: " . SSO_SITE_HOSTNAME . "?" . http_build_query($params));
-    }
-    else
-    {
-        if (isValidSignature($userDataArray))
-        {
-            // Specifically set the session ID for the user. This way we can destroy
-            // a session for a particular user from another script.
-            // Cannot call session_id AFTER session_start if setting ID.
-            session_destroy(); 
-            session_id(generateSessionId($userDataArray['user_id']));
-            session_start();
-            
-            $_SESSION['user_id']    = $userDataArray['user_id'];
-            $_SESSION['user_name']  = $userDataArray['user_name'];
-            $_SESSION['user_email'] = $userDataArray['user_email'];
-            
-            header("Location: " . SITE_HOSTNAME);
-        }
-        else
-        {
-            # Invalid request (hack?), redirect the user back to sign in.
-            $params = array('broker_id' => BROKER_ID);
-            header("Location: " . SSO_SITE_HOSTNAME . "?" . http_build_query($params));
-        }
+        $_SESSION['user_id'] = $ssoDetails->get_user_id();
+        $_SESSION['sso_expiry'] = $ssoDetails->get_sso_expiry();
     }
 }
-else
-{
-    # User is signed in.
-    print 
-        "Hello " . $_SESSION['user_name'] . ". <br />" . 
-        "Your user ID is: " . $_SESSION['user_id'] . " " . 
-        "and your email is: " . $_SESSION['user_email'];
-}
 
-
-/**
- * Check whether the user details sent to us came from
- * the SSO service without being modified.
- * @param $dataArray - array of name/value pairs in the recieved data
- */
-function isValidSignature($dataArray)
+if (isset($_SESSION['sso_expiry']) && $_SESSION['sso_expiry'] < time())
 {
-    if (!isset($dataArray['signature']))
+    /*
+     * When SSO expiry time is passed, the user should be redirected to the SSO, to keep its
+     * session alive. The user will be instantly returned to here.
+     */
+    
+    $ssoExpiry = $ssoClient->redirectToSSO();
+    
+    if($ssoClient->get_sso_expiry())
     {
-        throw new Exception("Missing signature");
+        /*
+         * The new SSO Expiry time should be saved, in order to trigger the next redirect.
+         */
+        $_SESSION['sso_expiry'] = $ssoClient->get_sso_expiry();
     }
-    
-    $recievedSignature = $dataArray['signature'];
-    unset($dataArray['signature']);
-    ksort($dataArray);
-    $jsonString = json_encode($dataArray);
-    $generatedSignature = hash_hmac('sha256', $jsonString, BROKER_SECRET);
-    
-    return ($generatedSignature === $recievedSignature);
-}
-
-
-/**
- * Generate a session ID to use for a given user_id. We need to do this so
- * that we can figure out which file to destroy (to destroy the session) for
- * the appropriate user when we get a logout request for a specific user ID.
- * @param int $user_id - the ID of the user we are generating a session ID for.
- */
-function generateSessionId($user_id)
-{
-    return hash_hmac('sha256', $user_id, BROKER_SECRET);
 }
