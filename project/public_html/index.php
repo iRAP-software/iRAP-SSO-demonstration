@@ -5,6 +5,8 @@ session_start();
 require_once(__DIR__ . '/../../settings/Settings.php');
 
 
+$ssoClient = new iRAP\SsoClient\SsoClient(BROKER_ID, BROKER_SECRET);
+
 if (!isset($_SESSION['user_id']))
 {
     /*
@@ -12,7 +14,6 @@ if (!isset($_SESSION['user_id']))
      * The user's browser will be redirected to the SSO and then returned here with the user
      * credentials.
      */
-    $ssoClient = new iRAP\SsoClient\SsoClient(BROKER_ID, BROKER_SECRET);
     $ssoDetails = $ssoClient->login();
 
     if($ssoClient->loginSuccessful())
