@@ -37,14 +37,14 @@ if (isset($_SESSION['sso_expiry']) && $_SESSION['sso_expiry'] < time())
      * When SSO expiry time is passed, the user should be redirected to the SSO, to keep its
      * session alive. The user will be instantly returned to here.
      */
-    
-    $ssoExpiry = $ssoClient->redirectToSSO();
-    
-    if($ssoClient->get_sso_expiry())
+
+    $ssoExpiry = $ssoClient->renewSSOSession($returnData);
+
+    if($ssoExpiry->get_sso_expiry())
     {
         /*
          * The new SSO Expiry time should be saved, in order to trigger the next redirect.
          */
-        $_SESSION['sso_expiry'] = $ssoClient->get_sso_expiry();
+        $_SESSION['sso_expiry'] = $ssoExpiry->get_sso_expiry();
     }
 }

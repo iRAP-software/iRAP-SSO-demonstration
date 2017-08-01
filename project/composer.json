@@ -1,5 +1,5 @@
 {
     "require": {
-        "irap/sso-client": "dev-master"
+        "irap/sso-client": "0.2.*"
     }
 }
