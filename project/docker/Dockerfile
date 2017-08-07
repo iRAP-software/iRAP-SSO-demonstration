@@ -3,22 +3,17 @@
 # The layout is this way so that the settings file sits one level above the project (trunk) so that
 # each dev can have their own settings and they do not get merged into the trunk.
 
-FROM ubuntu:14.04
+FROM ubuntu:16.04
 
 RUN apt-get update
 RUN apt-get dist-upgrade -y
 
 
-# Enable PHP 5.6 repo and update apt
-RUN echo "deb http://ppa.launchpad.net/ondrej/php5-5.6/ubuntu trusty main" >> /etc/apt/sources.list && \
-    apt-key adv --keyserver keyserver.ubuntu.com --recv-key E5267A6C && \
-    apt-get update
-
 # Install the relevant packages
-RUN apt-get install vim apache2 libapache2-mod-php5 php5-cli php5-mysqlnd curl php5-curl php5-mcrypt -y
+RUN apt-get install vim apache2 libapache2-mod-php7.0 php7.0-cli php7.0-mysql curl php7.0-curl -y
 
 # Enable the php mod we just installed
-RUN a2enmod php5
+RUN a2enmod php7.0
 
 # expose port 80 and 443 for the web requests
 EXPOSE 80
